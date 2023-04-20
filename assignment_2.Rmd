@@ -1,0 +1,24 @@
+---
+title: "assignment_2"
+author: "Alia Ajina, Lauren Harris, Mia"
+date: '2023-04-20'
+output: html_document
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Attach packages
+library(here)
+library(tidyverse)
+library(janitor)
+```
+
+```{r}
+
+# Add in image of almond function flow chart
+knitr::include_graphics(here("images","assignment_2-2.jpg") )
+
+```
