@@ -1,24 +1,48 @@
 ---
 title: "assignment_2"
-author: "Alia Ajina, Lauren Harris, Mia"
+author: "Alia Ajina, Lauren Harris, Mia Guarnieri"
 date: '2023-04-20'
 output: html_document
 ---
 
-
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-# Attach packages
+# attach packages
 library(here)
 library(tidyverse)
 library(janitor)
 ```
 
+Flow chart for almond yield anomaly function
 ```{r}
-
-# Add in image of almond function flow chart
 knitr::include_graphics(here("images","assignment_2-2.jpg") )
+```
 
+Read in clim.txt data
+```{r}
+clim_data <- read_delim(here("data", "clim.txt"))
+clim_data <- as.data.frame(clim_data) # convert to df
+```
+
+Source function
+```{r}
+source(here("R", "almond_yield.R"))
+```
+
+Run custom function for almond yield
+```{r}
+almond_results <- almond_yield(precip = clim_data$precip, tmin_c = clim_data$tmin_c, month = clim_data$month, year = clim_data$year)
+```
+
+Check answers
+
+- The lowest almond yield anomaly should be approximately -0.027 ton/acre
+- The mean almond yield anomaly should be approximately 182 ton/acre
+- The maximum almond yield anomaly should be approximately 1920 ton/acre
+
+```{r}
+min(almond_results$anomaly, na.rm = TRUE)
+mean(almond_results$anomaly, na.rm = TRUE)
+max(almond_results$anomaly, na.rm = TRUE)
 ```
