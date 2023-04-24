@@ -6,7 +6,7 @@
 #' @param precip Vector of precipitation (mm)
 #' @param month Vector of months (numeric)
 #' @param year Vector of years (numeric)
-#' @return Almond yield anomaly (tons/acre)
+#' @return Data frame of almond yield anomaly by year (tons/acre)
 #' @author Lauren Harris, Alia Ajina, Mia Guarnieri
 #' 
 almond_yield <- function(precip, tmin_c, month, year){
@@ -23,7 +23,7 @@ almond_yield <- function(precip, tmin_c, month, year){
   colnames(output_df) <- c("year", "anomaly")
   
   # for loop to fill in data frame with years and anomaly values
-  for (i in min(unique(df$year)):max(unique(df$year))){
+  for (i in min(unique(df$year)):max(unique(df$year))){ # loop over all years
     
     # calculate Tn_feb for the year
     df_feb_i <- df_feb[df_feb$year == i,] # filter to year
@@ -41,7 +41,7 @@ almond_yield <- function(precip, tmin_c, month, year){
     output_df <- rbind(output_df, output_df_row)
   }
   
-  # return cleaned up dataframe
+  # return cleaned up data frame
   output_df <- drop_na(output_df) # remove NA rows (first row)
   output_df$anomaly[output_df$anomaly == -Inf] <- NA # replace non-answers with NA (for lack of data)
   return(output_df)
