@@ -1,0 +1,61 @@
+---
+title: "Informal Sensitivity Analysis"
+author: "Mia Guarnieri"
+date: "2023-04-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(here)
+
+library(tidyverse)
+
+library(purrr)
+
+library(ggpubr)
+```
+
+#Read in the data
+
+```{r}
+clim_data <- read_delim(here("data", "clim.txt"))
+clim_data <- as.data.frame(clim_data) # convert to df
+```
+
+#Source the function
+
+```{r}
+source(here("R", "almond_yield.R"))
+```
+
+
+#Informal sensitivity analysis - precipitation
+
+```{r}
+#Create a distribution for the variable we are concerned about (precip); we are using a uniform distribution because we don't have prior knowledge about the distribution
+precip = runif(50, min = 0, max = 20)
+
+#Use the map function to run the almond yield function, keeping all other variables except for precip pulling from the data frame as usual
+precip_sa = precip %>% map(~almond_yield(precip = .x, tmin_c = clim_data$tmin_c, month = clim_data$month, year = clim_data$year))
+
+#Look at the head of the sensitivity data
+head(precip_sa)
+
+```
+
+#Sensitivity analysis - temp
+
+```{r}
+#Create a distribution for the variable we are concerned about (tmin_c); we are using a uniform distribution because we don't have prior knowledge about the distribution
+tmin_c = runif(50, min = 0, max = 40)
+
+#Use the map function to run the almond yield function, keeping all other variables except for precip pulling from the data frame as usual
+temp_sa = tmin_c %>% map(~almond_yield(precip = clim_data$precip, tmin_c = .x, month = clim_data$month, year = clim_data$year))
+
+#Look at the head of the sensitivity data
+head(temp_sa)
+```
+
+
