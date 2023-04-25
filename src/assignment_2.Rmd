@@ -21,8 +21,8 @@ knitr::include_graphics(here("images","assignment_2-2.jpg") )
 
 Read in clim.txt data
 ```{r}
-clim_data <- read_delim(here("data", "clim.txt"))
-clim_data <- as.data.frame(clim_data) # convert to df
+clim_data <- read_delim(here("data", "clim.txt")) # import
+clim_data <- as.data.frame(clim_data) # convert to data frame
 ```
 
 Source function
@@ -42,7 +42,10 @@ Check answers
 - The maximum almond yield anomaly should be approximately 1920 ton/acre
 
 ```{r}
+print("Minimum almond yield anomaly:")
 min(almond_results$anomaly, na.rm = TRUE)
+print("Mean almond yield anomaly:")
 mean(almond_results$anomaly, na.rm = TRUE)
+print("Maximum almond yield anomaly:")
 max(almond_results$anomaly, na.rm = TRUE)
 ```
