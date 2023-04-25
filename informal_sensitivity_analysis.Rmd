@@ -51,7 +51,7 @@ head(precip_sa)
 #Create a distribution for the variable we are concerned about (tmin_c); we are using a uniform distribution because we don't have prior knowledge about the distribution
 tmin_c = runif(50, min = 0, max = 40)
 
-#Use the map function to run the almond yield function, keeping all other variables except for precip pulling from the data frame as usual
+#Use the map function to run the almond yield function, keeping all other variables except for tmin_c pulling from the data frame as usual
 temp_sa = tmin_c %>% map(~almond_yield(precip = clim_data$precip, tmin_c = .x, month = clim_data$month, year = clim_data$year))
 
 #Look at the head of the sensitivity data
