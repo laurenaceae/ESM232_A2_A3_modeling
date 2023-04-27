@@ -1,0 +1,15 @@
+---
+title: "assignment_3"
+author: "Alia Ajina"
+date: '2023-04-27'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Mean yield: 2,000 lbs/acre
+Variance in yield is 1400-2600 lbs
+Price: .90 - 2.10 cents per pound; mean is 1.50$
+https://fruitgrowers.com/california-almond-production-is-booming/
