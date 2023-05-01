@@ -27,7 +27,7 @@ almond_yield <- function(precip, tmin_c, month, year){
     
     # calculate Tn_feb for the year
     df_feb_i <- df_feb[df_feb$year == i,] # filter to year
-    Tn_feb_i <- suppressWarnings(min(df_feb_i$tmin_c)) # calculate min
+    Tn_feb_i <- suppressWarnings(mean(df_feb_i$tmin_c)) # calculate mean min temp
     
     # calculate P_jan for the year
     df_jan_i <- df_jan[df_jan$year == i,] # filter to year
@@ -44,6 +44,14 @@ almond_yield <- function(precip, tmin_c, month, year){
   # return cleaned up data frame
   output_df <- drop_na(output_df) # remove NA rows (first row)
   output_df$anomaly[output_df$anomaly == -Inf] <- NA # replace non-answers with NA (for lack of data)
-  return(output_df)
+  
+  # extract min, mean, and max yield anomaly for the whole dataframe
+  min = min(output_df$anomaly, na.rm = TRUE)
+  mean = mean(output_df$anomaly, na.rm = TRUE)
+  max = max(output_df$anomaly, na.rm = TRUE)
+  
+  output_list <- list(min = min, mean = mean, max = max)
+  
+  return(output_list)
 
 }

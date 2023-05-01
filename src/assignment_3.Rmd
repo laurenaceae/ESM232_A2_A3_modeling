@@ -1,15 +1,98 @@
 ---
-title: "assignment_3"
-author: "Alia Ajina"
+title: "Assignment 3"
+author: "Alia Ajina, Lauren Harris, Mia Guarnieri"
 date: '2023-04-27'
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+# attach packages
+library(here)
+library(tidyverse)
+library(janitor)
+library(ggpubr)
 ```
 
-Mean yield: 2,000 lbs/acre
-Variance in yield is 1400-2600 lbs
-Price: .90 - 2.10 cents per pound; mean is 1.50$
-https://fruitgrowers.com/california-almond-production-is-booming/
+# Yield and price information
+
+- Mean yield: 2,000 lbs/acre (1 ton/acre)
+- Variance in yield is 1400-2600 lbs (0.7 - 1.3 tons/acre)
+- Price: .90 - 2.10 cents per pound; mean is 1.50$ (1 ton = 2000 lbs; (1800 - 4200 dollars per pound; mean 3000))
+
+Source: https://fruitgrowers.com/california-almond-production-is-booming/
+
+# Read in the data
+```{r}
+clim_data <- read_delim(here("data", "clim.txt")) # import
+clim_data <- as.data.frame(clim_data) # convert to data frame
+```
+
+
+# Source the functions
+```{r}
+source(here("R", "almond_yield.R"))
+source(here("R", "almond_profit.R"))
+```
+
+
+# Test the function
+```{r}
+anomalies <- almond_yield(precip = clim_data$precip, tmin_c = clim_data$tmin_c, month = clim_data$month, year = clim_data$year)
+
+mean_profits <- almond_profit(a = anomalies$mean)
+```
+
+# Informal sensitivity analysis - mean yield
+```{r}
+#create the distribution for mean yield
+m = rnorm(50, mean = 1, sd = 0.3)
+
+#use the map function to run the almond profit function
+m_sa = m %>% map(~almond_profit(a = anomalies$mean, m = .x))
+```
+
+# Informal sensitivity analysis - price per ton
+```{r}
+#create the distribution for price per ton
+p = rnorm(50, mean = 3000, sd = 1200)
+
+#use the map function to run the almond profit function
+p_sa = p %>% map(~almond_profit(a = anomalies$mean, p = .x))
+```
+
+# Graph the results
+```{r}
+#mean yield dataframe
+m_sa_df <- as.data.frame(unlist(m_sa)) %>% 
+  mutate(dataset = "Mean Yield")
+
+colnames(m_sa_df) <- c("Profit", "data")
+
+yield <- ggplot(m_sa_df) +
+  geom_boxplot(aes(y = Profit, x = data)) +
+  theme_minimal() +
+  theme(axis.title.x = element_blank())
+
+#price dataframe
+p_sa_df <- as.data.frame(unlist(p_sa)) %>% 
+  mutate(dataset = "Price")
+
+colnames(p_sa_df) <- c("profit", "data")
+
+price <- ggplot(p_sa_df) +
+  geom_boxplot(aes(y = profit, x = data)) +
+  theme_minimal() +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+#combine the plots
+
+double_plot <- ggarrange(yield, price)
+
+annotate_figure(p = double_plot, bottom = text_grob(str_wrap("Figure 1. Sensitivity of annual almond profits in US dollars per acre to variation in mean yield in tons per acre and price of almonds in dollars per ton")))
+
+
+```
+
