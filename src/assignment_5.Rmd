@@ -15,6 +15,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+# Installing required packages
 library(sensitivity)
 library(tidyverse)
 library(lubridate)
@@ -29,15 +30,17 @@ library(here)
 Modeled - observed drought days
 
 ```{r drought days}
-# read in sager data
+# Read in sager data
 sager <- read.table("../Data/sager.txt", header=T)
 
-# add date
+# Add and mutate data
 sager = sager %>% mutate(date = paste(day,month,year, sep="/"))
 sager$date = as.Date(sager$date,"%d/%m/%Y")
 
+# Sourcing our function
 source(here("R", "drought_days.R"))
 
+# Testing our function
 dd_test <- drought_days(sager)
 ```
 
@@ -51,37 +54,40 @@ source(here("R", "combined_metric.R"))
 
 cm <- combined_metric(m = sager$model, obs = sager$obs, wy = sager$wy)
 
-#read in msage data
+# Read in msage data
 msage <- read.table("../Data/sagerm.txt", header=T)
 
-#organize msage data
-nsim = ncol(msage) # keep track of number of simulations (e.g results for each parameter set)
+# Organize msage data
+nsim = ncol(msage)
 snames = sprintf("S%d",seq(from=1, to=nsim))
-colnames(msage) = snames # use as a column names
+colnames(msage) = snames
 
-# take start date from our earlier output
+# Use date from our earlier output
 msage$date = sager$date
 msage$month = sager$month
 msage$year = sager$year
 msage$day = sager$day
 msage$wy = sager$wy
 
-# lets add observed
+# Add observed data
 msage <- left_join(msage, sager[,c("obs","date")], by = c("date"))
 
-# subset for split sample calibration
+# Creating subset to split the sample calibration
 short_msage <- subset(msage, wy < 1975)
 
-# subset for split sample calibration
-short_msage = subset(msage, wy < 1975)
-
-# compute performance measures for output from all parameters
+# Computing performance measures for output from all parameters
 res <- short_msage %>% 
   select(!c("date","month","year","day", "obs", "wy")) %>%
   map_dbl(combined_metric, obs = short_msage$obs, wy = short_msage$wy)
 
+# Determining our best and worst parameter set
+# Best parameter set
 which.max(res)
+
+# Worst parameter set
 which.min(res)
 ```
 
+## Determination of Best and Worst Parameter Sets
 
+We determined that our best parameter set was S10 and our worst parameter set was S77.
