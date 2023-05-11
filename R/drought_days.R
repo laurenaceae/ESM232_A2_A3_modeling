@@ -1,4 +1,6 @@
-#' @param name description
+#' @param d 
+#' @return Combined data frame of observed and model data with total number of days in each year that had less than 0.5 inches of precipitation
+#' @authors Lauren Harris, Mia Guarnieri, Alia Ajina
 #' 
 
 drought_days <- function(d){
