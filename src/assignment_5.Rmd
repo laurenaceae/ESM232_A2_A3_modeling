@@ -1,0 +1,80 @@
+---
+title: 'Assignment 5: Calibration'
+author: "Mia Guarnieri, Lauren Harris, Alia Ajina"
+date: "2023-05-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(sensitivity)
+library(tidyverse)
+library(lubridate)
+library(reldist)
+library(purrr)
+library(ggpubr)
+library(here)
+```
+
+## Testing new metric 
+
+Modeled - observed drought days
+
+```{r drought days}
+# read in sager data
+sager <- read.table("../Data/sager.txt", header=T)
+
+# add date
+sager = sager %>% mutate(date = paste(day,month,year, sep="/"))
+sager$date = as.Date(sager$date,"%d/%m/%Y")
+
+source(here("R", "drought_days.R"))
+
+dd_test <- drought_days(sager)
+```
+
+## Creating and calibrating combined metric
+
+Sum of correlation between modeled and observed wet days and modeled and observed dry days. Min = 0 (no correlation of modeled and observed data for either wet or dry days) max = 2 (perfect correlation of modeled and observed data for both wet and dry days)
+
+```{r combined metric}
+
+source(here("R", "combined_metric.R"))
+
+cm <- combined_metric(m = sager$model, obs = sager$obs, wy = sager$wy)
+
+#read in msage data
+msage <- read.table("../Data/sagerm.txt", header=T)
+
+#organize msage data
+nsim = ncol(msage) # keep track of number of simulations (e.g results for each parameter set)
+snames = sprintf("S%d",seq(from=1, to=nsim))
+colnames(msage) = snames # use as a column names
+
+# take start date from our earlier output
+msage$date = sager$date
+msage$month = sager$month
+msage$year = sager$year
+msage$day = sager$day
+msage$wy = sager$wy
+
+# lets add observed
+msage <- left_join(msage, sager[,c("obs","date")], by = c("date"))
+
+# subset for split sample calibration
+short_msage <- subset(msage, wy < 1975)
+
+# subset for split sample calibration
+short_msage = subset(msage, wy < 1975)
+
+# compute performance measures for output from all parameters
+res <- short_msage %>% 
+  select(!c("date","month","year","day", "obs", "wy")) %>%
+  map_dbl(combined_metric, obs = short_msage$obs, wy = short_msage$wy)
+
+which.max(res)
+which.min(res)
+```
+
+
