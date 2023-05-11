@@ -2,7 +2,14 @@
 title: 'Assignment 5: Calibration'
 author: "Mia Guarnieri, Lauren Harris, Alia Ajina"
 date: "2023-05-11"
-output: html_document
+output:
+  html_document:
+    toc: yes
+    toc_float: yes
+    theme: journal
+    code_folding: show
+    smooth_scroll: yes
+    collapsed: yes
 ---
 
 ```{r setup, include=FALSE}
