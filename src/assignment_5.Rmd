@@ -13,7 +13,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 
 # Installing required packages
 library(sensitivity)
@@ -27,7 +27,7 @@ library(here)
 
 ## Testing new metric 
 
-Modeled - observed drought days
+Modeled minus observed drought days (days with < 0.5 mm of streamflow).
 
 ```{r drought days}
 # Read in sager data
@@ -46,7 +46,7 @@ dd_test <- drought_days(sager)
 
 ## Creating and calibrating combined metric
 
-Sum of correlation between modeled and observed wet days and modeled and observed dry days. Min = 0 (no correlation of modeled and observed data for either wet or dry days) max = 2 (perfect correlation of modeled and observed data for both wet and dry days)
+Sum of correlation between modeled and observed wet days (> 10mm of streamflow) and modeled and observed dry days (< 0.5mm of streamflow). Min = -2 (perfectly inverse correlation of modeled and observed data for either wet or dry days) max = 2 (perfect correlation of modeled and observed data for both wet and dry days).
 
 ```{r combined metric}
 
@@ -78,16 +78,45 @@ short_msage <- subset(msage, wy < 1975)
 # Computing performance measures for output from all parameters
 res <- short_msage %>% 
   select(!c("date","month","year","day", "obs", "wy")) %>%
-  map_dbl(combined_metric, obs = short_msage$obs, wy = short_msage$wy)
+  map_df(combined_metric, obs = short_msage$obs, wy = short_msage$wy) %>% 
+  pivot_longer(cols = c(1:101),
+               names_to = "metric",
+               values_to = "values")
 
 # Determining our best and worst parameter set
 # Best parameter set
-which.max(res)
+best <- res$metric[res$values == max(res$values)]
 
 # Worst parameter set
-which.min(res)
+worst <- res$metric[res$values == min(res$values)]
 ```
+
+## Plot
+
+```{r}
+# graph range of performance measures
+ggplot(res) +
+  geom_histogram(aes(x = values), col = "lightgrey") +
+  labs(x = "Combined Metric",
+       y = "Count",
+       title = "Sum of correlation between modeled and observed extreme wet and dry days") +
+  theme_minimal()
+
+# running the model forward so we can look at the full time series
+
+# lets start with streamflow estimates from best performing parameter set
+ ggplot(msage, aes(date, msage[,best])) + 
+   geom_line(aes(col = "Modeled (S10)")) +
+   geom_line(aes(date, obs, col= "Observed")) +
+   theme_minimal() +
+   scale_color_manual(values=c("black", "red"))+
+   labs(x = "Date",
+        y = "Streamflow (mm/day)",
+        title = "Modeled vs Observed Streamflow Over Time",
+        col = "Data Source")
+```
+
 
 ## Determination of Best and Worst Parameter Sets
 
-We determined that our best parameter set was S10 and our worst parameter set was S77.
+We determined that our best parameter set was `r best` and our worst parameter set was `r worst`, based on our combined metric of the sum of correlation between modeled and observed extreme wet and dry days. We chose these metrics because we wanted to be certain that our model could account for extremes in streamflow during drought periods or periods of unusually high streamflow. Based on our calibration analysis, the majority of models performed well, with combined metric values of close to 1.5 on a scale of -2 to 2. The median combined metric value of the 101 tested parameter sets was `r round(median(res$values), 2)`.
